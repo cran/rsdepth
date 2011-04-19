@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <time.h>
 #include <math.h>
+#define MAXPOINTS 100000
 
 using namespace std;
 
@@ -16,9 +17,9 @@ public:
 	{
 		if(two.x==x &&two.y==y)
 			return 1;
-		return 0;	
+		return 0;
 	}
-	friend ostream& operator <<(ostream &os,const MyPoint &obj);	 
+	friend ostream& operator <<(ostream &os,const MyPoint &obj);
 	friend bool operator<(const MyPoint &obj,const MyPoint &obj1);
 };
 
@@ -32,7 +33,7 @@ ostream& operator <<(ostream &os,const MyPoint &obj)
 
 bool operator<(const MyPoint &obj,const MyPoint &obj1)
 {
-	return obj.angle<obj1.angle;	 
+	return obj.angle<obj1.angle;
 }
 
 
@@ -43,7 +44,7 @@ public:
 };
 
 int numberOfPoints = 0;
-MyPoint P[300], q;
+MyPoint P[MAXPOINTS], q;
 double Depth;
 int algo;
 int did2,did1;
@@ -54,11 +55,11 @@ char ch;
 
 double RSDepth(MyPoint q)
 {
-	double angle[300];
-	
-	int total[300];
-	
-	int endOf[300];
+	double angle[MAXPOINTS];
+
+	int total[MAXPOINTS];
+
+	//int endOf[MAXPOINTS];
 	//ofstream oo("dump.txt");
 
 	//plot points on unit cicle around q and calculate angles
@@ -74,12 +75,12 @@ double RSDepth(MyPoint q)
 		angle[i]=atan(slope)*57.35;
 
 		if (angle[i] < 0)   {
-            angle[i] += 180;                
+            angle[i] += 180;
         }
 
         if (q.y > P[i].y) {
-            angle[i] += 180;                 
-        }	
+            angle[i] += 180;
+        }
 		P[i].angle=angle[i];
 	}
 
@@ -89,21 +90,21 @@ double RSDepth(MyPoint q)
 
 
 	//Fill array from number of points between a point and its antipodal
-	
-    int count = 0;//points in between 
+
+    int count = 0;//points in between
     int index=0;//of points for which we have found antipodals
 	for (int i = 0; index < numberOfPoints  ; i++)
     {
 		count++;
         if ( (i-index)>= numberOfPoints ||angle[i % numberOfPoints ] > (angle[index] + 180) ||
-			
+
 			((angle[i % numberOfPoints ] < (angle[index]) && (angle[i % numberOfPoints ] + 360 > (angle[index] + 180)))))
-        
+
 		{
 			count--;
-        
+
 			total[index] = count - 1;
-            endOf[index] = i - 1;
+            //endOf[index] = i - 1;
             index++;
             count--;
             i--;
@@ -112,10 +113,10 @@ double RSDepth(MyPoint q)
     }
 
 	//calculate depth for first ray between 1 and n points.
-	
+
     double minDepth = 100000;
-    
-	double ray[100];
+
+	double ray[MAXPOINTS];
     ray[0] = 0;
 	did2=0;
 	double current_angle=0,largest_angle = 0;
@@ -125,11 +126,11 @@ double RSDepth(MyPoint q)
 
 	if(ray[0]>=1.0/9.0*numberOfPoints*numberOfPoints)
 	{
-		//oo<<"1"<<endl<<P[numberOfPoints-1]<<endl<<P[0]<<endl;		
+		//oo<<"1"<<endl<<P[numberOfPoints-1]<<endl<<P[0]<<endl;
 		current_angle+=angle[0]+360-angle[numberOfPoints-1];
 	}
 	else;
-		//oo<<"0"<<endl<<P[numberOfPoints-1]<<endl<<P[0]<<endl;		
+		//oo<<"0"<<endl<<P[numberOfPoints-1]<<endl<<P[0]<<endl;
 
 
 	for(int i=1;i<numberOfPoints+1;i++)
@@ -140,9 +141,9 @@ double RSDepth(MyPoint q)
 		{
 			/*
 			if(i==numberOfPoints)
-				oo<<"1"<<endl<<P[i-1]<<endl<<P[0]<<endl;		
+				oo<<"1"<<endl<<P[i-1]<<endl<<P[0]<<endl;
 			else
-				oo<<"1"<<endl<<P[i-1]<<endl<<P[i]<<endl;		
+				oo<<"1"<<endl<<P[i-1]<<endl<<P[i]<<endl;
 
 				*/
 			current_angle+=angle[i]-angle[i-1];
@@ -151,22 +152,22 @@ double RSDepth(MyPoint q)
 		{
 			/*
 			if(i==numberOfPoints)
-				oo<<"0"<<endl<<P[i-1]<<endl<<P[0]<<endl;		
+				oo<<"0"<<endl<<P[i-1]<<endl<<P[0]<<endl;
 			else
-				oo<<"0"<<endl<<P[i-1]<<endl<<P[i]<<endl;		
+				oo<<"0"<<endl<<P[i-1]<<endl<<P[i]<<endl;
 			*/
 			if(current_angle > largest_angle)
 			{
 				largest_angle=current_angle;
-				current_angle=0;			
-			
+				current_angle=0;
+
 			}
 		}
 
 
 		if (minDepth > ray[i])
 		{
-            minDepth = ray[i];            
+            minDepth = ray[i];
 			did2=i;
 		}
     }
@@ -184,8 +185,8 @@ double RSDepth(double qx, double qy)
 }
 int InBoundingBox(MyLine a, MyPoint p)
 {
-	
-            
+
+
     if (p.x <min(a.a.x, a.b.x))
         return 0;
 
@@ -198,23 +199,23 @@ int InBoundingBox(MyLine a, MyPoint p)
     if (p.y > max(a.a.y, a.b.y))
         return 0;
 
-    return 1;      
-        
+    return 1;
+
 }
 MyPoint Intersects( MyLine first, MyLine second)
 {
-	
+
 	MyPoint intersect;
 	intersect.x=intersect.y=0;
-	
+
 	//this line
-                           
+
 	double a1 = (first.b.y - first.a.y);
-	    
+
 	double b1 = (first.a.x - first.b.x);
-	
+
 	double c1 = (first.b.x*first.a.y - first.a.x*first.b.y);
-        	
+
 
 	//Line to test against
 	double a2 = (second.b.y - second.a.y);
@@ -222,10 +223,10 @@ MyPoint Intersects( MyLine first, MyLine second)
 	double c2 = (second.b.x*second.a.y - second.a.x*second.b.y);
 
 	double denom = a1*b2 - a2*b1;
-        	
+
 	//Check for parallel lines
 	if(denom == 0) { return intersect; }
-        	
+
 	//Get the intersection point
 	intersect.x = ( (b1*c2 - b2*c1)/denom);
 	intersect.y = ( (a2*c1 - a1*c2)/denom);
@@ -238,7 +239,7 @@ MyPoint Intersects( MyLine first, MyLine second)
 			intersect.x=0;
 			intersect.y = 0;
 		}
-            	
+
 	return intersect;
 
 }
@@ -250,7 +251,7 @@ int IsUnique(MyPoint p)
             return 0;
     }
 
-    return 1;        
+    return 1;
 }
 
 
@@ -261,26 +262,26 @@ int IsUnique(MyPoint p)
 	MyLine l2;
 
 	l1.a=P[0];
-	l1.b=P[1];    
+	l1.b=P[1];
 	l1.a=P[2];
 	l1.b=P[3];
-    
+
     double max = 0;
     double t = 0;
-            
+
     for (int i = 0; i < numberOfPoints; i++)
     {
         l1.a = P[i];
         for (int j = i + 1; j < numberOfPoints; j++)
         {
             l1.b = P[j];
-                    
+
             for (int k = 0; k < numberOfPoints; k++)
             {
                 if (i == k || j == k)
                     continue;
                 l2.a = P[k];
-                     
+
                 for (int l = k + 1; l < numberOfPoints; l++)
                 {
 
@@ -289,19 +290,19 @@ int IsUnique(MyPoint p)
                     l2.b = P[l];
                     dum = Intersects(l1, l2);
 
-					if (dum.x != 0 && dum.y != 0)  {                        
+					if (dum.x != 0 && dum.y != 0)  {
                         t =RSDepth(dum.x , dum.y);
                         if (t > max && IsUnique(dum)) { max = t;ok = dum;}
                     }
 
-                }                    
+                }
             }
-                
+
         }
-            
+
     }
-    
-	return ok;        
+
+	return ok;
 }
 
  ifstream ii;
@@ -316,11 +317,11 @@ int IsUnique(MyPoint p)
 		while(ch!=']')
 			ii>>ch;
 
-		ii>>one;			
+		ii>>one;
 		P[i].x=one;
 		ii>>one;
 		P[i].y=one;
-	}	
+	}
 }
 
  void parse()
@@ -343,10 +344,10 @@ int IsUnique(MyPoint p)
 		oo<<temp.x<<"   ";
 		oo<<temp.y<<endl;
 		double th = (numberOfPoints*numberOfPoints)/RSDepth(temp);
-		oo<<th<<endl;	
+		oo<<th<<endl;
 	}
 
-	
+
 	ii.close();
 	oo.close();
 	return;
@@ -354,28 +355,30 @@ int IsUnique(MyPoint p)
 
 extern "C" {
 
-void rs_depth(double *x,double *p, double *dp,int *nn)
-{	
+void rs_depth(double *x,double *y,double *p, double *dp,int *nn)
+{
 	int count=0;
 	numberOfPoints=nn[0];
 	double dd;
 	for(int i=0;i<numberOfPoints;i++)
 	{
-		P[i].x=x[count++];
-		P[i].y=x[count++];
+		P[i].x=x[count];
+		P[i].y=y[count];
+		count++;
 	}
 	dd=RSDepth(p[0],p[1]);
 	dp[0]=dd;
 }
-void rs_med(double *x, double *md, int *nn)
+void rs_med(double *x, double *y, double *md, int *nn)
 {
 	int count=0;
 	numberOfPoints=nn[0];
 	MyPoint dd;
 	for(int i=0;i<numberOfPoints;i++)
 	{
-		P[i].x=x[count++];
-		P[i].y=x[count++];
+		P[i].x=x[count];
+		P[i].y=y[count];
+		count++;
 	}
 	dd=RSMedian();
 	md[0]=dd.x;

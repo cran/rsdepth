@@ -10,7 +10,8 @@ Computes the Ray Shooting depth of a point with respect to a bivariate data set.
 rsdepth(pt,q, ...)
 }
 \arguments{
-  \item{q}{Numerical vector whose depth is to be calculated. Data needs to be 2-dimensional.}
+  \item{q}{Numerical vector whose depth is to be calculated. 
+  Data needs to be 2-dimensional.}
   \item{pt}{The data as a matrix, data frame or list. If it is a matrix or data frame, then each row is viewed as one bivariate observation. If it is a list, all components must be numerical vectors of equal length (coordinates of observations).}
   \item{...}{For future use.}
 }

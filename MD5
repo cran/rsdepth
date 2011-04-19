@@ -1,0 +1,9 @@
+1548947d4ee2bce22dd5e1287058c904 *DESCRIPTION
+9fdfeb11f7ddba6f3aab9aaa6b1ac5dd *NAMESPACE
+816059ce91740e99d14fcb2b73bd30d5 *R/firstlib.R
+d0c73aa0a86298b301224ab5f2984460 *R/rsdepth.R
+aa50d03d9ea8bdd6a9ccc68ef7d00316 *R/rsmed.R
+5c4423ec9b0420b77d2e2638053151b6 *changelog
+0752d895751d7fd77540a58a677bec22 *man/rsdepth.Rd
+697e5d939a243dc7a7585ff1fe3bc0dd *man/rsmed.Rd
+b6d7cfda0222746c37b950f1a9252036 *src/rsdepth.cpp
