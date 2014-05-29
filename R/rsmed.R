@@ -1,4 +1,4 @@
-rsmed <- function(pt, eps=c(0),...)
+rsmed <- function(pt, eps=c(0), ...)
 {
 	if(!is.matrix(pt)) stop ("first argument pt must be a 2 dimensional matrix");
 	if(eps>1) stop ("approximation argument eps must be greater than 0 and less than 1");
@@ -37,16 +37,13 @@ rsmed <- function(pt, eps=c(0),...)
 	
 	}
 
-	
-	
-	
-	
         median = .C("rs_med",
                    xpoints=as.double(pt[,1]), 
   		   ypoints=as.double(pt[,2]), 
                     md=double(2), 
                     sz=as.integer(m),
                     PACKAGE = "rsdepth")$md;
+                    
 	return (median);
 
 }

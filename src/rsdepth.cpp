@@ -1,66 +1,48 @@
 // RSsimulation.cpp : Defines the entry point for the console application.
 //
-#include <R.h>
-#include <fstream>
-#include <algorithm>
-#include <time.h>
-#include <math.h>
-#define MAXPOINTS 100000
+#include "pointline.h"
+
+#define MAXPOINTS 10000
 
 using namespace std;
 
-class MyPoint
-{
-public:
-	double x,y,angle;
-	int operator ==(MyPoint two)
-	{
-		if(two.x==x &&two.y==y)
-			return 1;
-		return 0;
-	}
-	friend ostream& operator <<(ostream &os,const MyPoint &obj);
-	friend bool operator<(const MyPoint &obj,const MyPoint &obj1);
-};
 
-ostream& operator <<(ostream &os,const MyPoint &obj)
-{
-      //os<<"("<<obj.x<<", "<<obj.x<<")";
-	os<<obj.x<<endl<<obj.y;
-      return os;
-}
+class MyPoint;
+class MyLine;
 
-
-bool operator<(const MyPoint &obj,const MyPoint &obj1)
-{
-	return obj.angle<obj1.angle;
-}
-
-
-class MyLine
-{
-public:
-	MyPoint a,b;
-};
 
 int numberOfPoints = 0;
 MyPoint P[MAXPOINTS], q;
 double Depth;
 int algo;
-int did2,did1;
+int did2,did1=0;
 int m=10,n=60;
 char ch;
 
+bool depthcompare(const MyPoint &obj,const MyPoint &obj1)
+{
+	return RSDepth(obj)<RSDepth(obj1);
+}
 
+
+int IsUnique(MyPoint p)
+{
+    for(int i=0;i<numberOfPoints;i++)    {
+        if (p.x == P[i].x && p.y == P[i].y)
+            return 0;
+    }
+
+    return 1;
+}
 
 double RSDepth(MyPoint q)
 {
-	double angle[MAXPOINTS];
+	double* angle;
+	int *total;
 
-	int total[MAXPOINTS];
+	angle = (double*) malloc(sizeof(double)*numberOfPoints*2);
+	total = (int*) malloc(sizeof(int)*numberOfPoints*2);;
 
-	//int endOf[MAXPOINTS];
-	//ofstream oo("dump.txt");
 
 	//plot points on unit cicle around q and calculate angles
 	for(int i=0;i<numberOfPoints;i++)
@@ -115,8 +97,9 @@ double RSDepth(MyPoint q)
 	//calculate depth for first ray between 1 and n points.
 
     double minDepth = 100000;
+	double *ray;
+	ray = (double*) malloc(sizeof(double)*numberOfPoints*2);
 
-	double ray[MAXPOINTS];
     ray[0] = 0;
 	did2=0;
 	double current_angle=0,largest_angle = 0;
@@ -172,6 +155,10 @@ double RSDepth(MyPoint q)
 		}
     }
 //	oo.close();
+    free(angle);
+    free(ray);
+    free(total);
+
     return minDepth;
 
 }
@@ -183,77 +170,6 @@ double RSDepth(double qx, double qy)
 	pt.y=qy;
 	return RSDepth(pt);
 }
-int InBoundingBox(MyLine a, MyPoint p)
-{
-
-
-    if (p.x <min(a.a.x, a.b.x))
-        return 0;
-
-    if (p.x > max(a.a.x, a.b.x))
-        return 0;
-
-    if (p.y <min(a.a.y, a.b.y))
-        return 0;
-
-    if (p.y > max(a.a.y, a.b.y))
-        return 0;
-
-    return 1;
-
-}
-MyPoint Intersects( MyLine first, MyLine second)
-{
-
-	MyPoint intersect;
-	intersect.x=intersect.y=0;
-
-	//this line
-
-	double a1 = (first.b.y - first.a.y);
-
-	double b1 = (first.a.x - first.b.x);
-
-	double c1 = (first.b.x*first.a.y - first.a.x*first.b.y);
-
-
-	//Line to test against
-	double a2 = (second.b.y - second.a.y);
-	double b2 = (second.a.x - second.b.x);
-	double c2 = (second.b.x*second.a.y - second.a.x*second.b.y);
-
-	double denom = a1*b2 - a2*b1;
-
-	//Check for parallel lines
-	if(denom == 0) { return intersect; }
-
-	//Get the intersection point
-	intersect.x = ( (b1*c2 - b2*c1)/denom);
-	intersect.y = ( (a2*c1 - a1*c2)/denom);
-
-	//InBoundingBox tests to see if the point is in the bounding box for
-		//a line segment. The point must be in both lines' bounding boxes to
-		//register and intersection.
-	if( InBoundingBox( first,intersect )==0 || InBoundingBox( second,intersect )==0 )
-		{
-			intersect.x=0;
-			intersect.y = 0;
-		}
-
-	return intersect;
-
-}
-
-int IsUnique(MyPoint p)
-{
-    for(int i=0;i<numberOfPoints;i++)    {
-        if (p.x == P[i].x && p.y == P[i].y)
-            return 0;
-    }
-
-    return 1;
-}
-
 
  MyPoint RSMedian()
 {
@@ -290,7 +206,7 @@ int IsUnique(MyPoint p)
                     l2.b = P[l];
                     dum = Intersects(l1, l2);
 
-					if (dum.x != 0 && dum.y != 0)  {
+					if (dum.x != MAXINT && dum.y != MAXINT)  {
                         t =RSDepth(dum.x , dum.y);
                         if (t > max && IsUnique(dum)) { max = t;ok = dum;}
                     }
@@ -307,54 +223,188 @@ int IsUnique(MyPoint p)
 
  ifstream ii;
 
- void parse2()
+
+MyPoint centroid;
+
+MyPoint compute2DPolygonCentroid(double *x,double *y, int vertexCount)
 {
-	double one;
+    centroid.x=0;
+    centroid.y=0;
+    double signedArea = 0.0;
+    double x0 = 0.0; // Current vertex X
+    double y0 = 0.0; // Current vertex Y
+    double x1 = 0.0; // Next vertex X
+    double y1 = 0.0; // Next vertex Y
+    double a = 0.0;  // Partial signed area
 
-	for(int i=0;i<numberOfPoints;i++)
-	{
-		ch='0';
-		while(ch!=']')
-			ii>>ch;
+    // For all vertices except last
+    int i=0;
+    for (i=0; i<vertexCount-1; ++i)
+    {
+        x0 = x[i];
+        y0 = y[i];
+        x1 = x[i+1];
+        y1 = y[i+1];
+        a = x0*y1 - x1*y0;
+        signedArea += a;
+        centroid.x += (x0 + x1)*a;
+        centroid.y += (y0 + y1)*a;
+    }
 
-		ii>>one;
-		P[i].x=one;
-		ii>>one;
-		P[i].y=one;
-	}
+    // Do last vertex
+    x0 = x[i];
+    y0 = y[i];
+    x1 = x[0];
+    y1 = y[0];
+    a = x0*y1 - x1*y0;
+    signedArea += a;
+    centroid.x += (x0 + x1)*a;
+    centroid.y += (y0 + y1)*a;
+
+    signedArea *= 0.5;
+    centroid.x /= (6.0*signedArea);
+    centroid.y /= (6.0*signedArea);
+
+    return centroid;
 }
 
- void parse()
+int FillBag(double *bag,double medDepth, double *center,int *cSize)
 {
-	ii.open("C:\\works\\60\\cauchy_60.txt");
-	ofstream oo("C:\\works\\60\\cauchy.txt");
-	numberOfPoints=n;
-	MyPoint temp;
+	int bagSize=0;
+	   MyPoint dum,ok;
+	    MyLine l1;
+		MyLine l2;
 
-	for(int i=0;i<m;i++)
-	{
-		ch='0';
-		while(ch!=']')
-			ii>>ch;
-		ch='0';
-		while(ch!=']')
-			ii>>ch;
-		parse2();
-		temp = RSMedian();
-		oo<<temp.x<<"   ";
-		oo<<temp.y<<endl;
-		double th = (numberOfPoints*numberOfPoints)/RSDepth(temp);
-		oo<<th<<endl;
-	}
+		l1.a=P[0];
+		l1.b=P[1];
+		l1.a=P[2];
+		l1.b=P[3];
+
+	    double max = 0;
+	    double t = 0;
+
+	    for (int i = 0; i < numberOfPoints; i++)
+	    {
+	        l1.a = P[i];
+	        for (int j = i + 1; j < numberOfPoints; j++)
+	        {
+	            l1.b = P[j];
+
+	            for (int k = 0; k < numberOfPoints; k++)
+	            {
+	                if (i == k || j == k)
+	                    continue;
+	                l2.a = P[k];
+
+	                for (int l = k + 1; l < numberOfPoints; l++)
+	                {
+
+	                    if (i == l || j == l)
+	                        continue;
+	                    l2.b = P[l];
+	                    dum = Intersects(l1, l2);
+
+						if (dum.x != MAXINT && dum.y != MAXINT)  {
+	                        t =RSDepth(dum.x , dum.y);
+
+	                        if (t > (medDepth+numberOfPoints-1) && IsUnique(dum))
+	                        {
+	                        	bag[bagSize++]= dum.x;
+	                        	bag[bagSize++]= dum.y;
+
+	                        	if(t >= (numberOfPoints*numberOfPoints)/9.0)
+	                        	{
+	                        	    center[cSize[0]++]= dum.x;
+                                    center[cSize[0]++]= dum.y;
+	                        	}
+	                        	max = t;ok = dum;
+	                        }
+	                    }
+
+	                }
+	            }
+
+	        }
+
+	    }
 
 
-	ii.close();
-	oo.close();
-	return;
+	return bagSize;
+
 }
+
+
+void GetCenter(double *center,int *cSize)
+{
+
+	   MyPoint dum,ok;
+	    MyLine l1;
+		MyLine l2;
+
+		l1.a=P[0];
+		l1.b=P[1];
+		l1.a=P[2];
+		l1.b=P[3];
+
+	    double max = 0;
+	    double t = 0;
+
+	    for (int i = 0; i < numberOfPoints; i++)
+	    {
+	        l1.a = P[i];
+	        for (int j = i + 1; j < numberOfPoints; j++)
+	        {
+	            l1.b = P[j];
+
+	            for (int k = 0; k < numberOfPoints; k++)
+	            {
+	                if (i == k || j == k)
+	                    continue;
+	                l2.a = P[k];
+
+	                for (int l = k + 1; l < numberOfPoints; l++)
+	                {
+
+	                    if (i == l || j == l)
+	                        continue;
+	                    l2.b = P[l];
+	                    dum = Intersects(l1, l2);
+
+						if (dum.x != MAXINT && dum.y != MAXINT)  {
+	                        t =RSDepth(dum.x , dum.y);
+
+	                        	if(t >= (numberOfPoints*numberOfPoints)/9.0)
+	                        	{
+	                        	    center[cSize[0]++]= dum.x;
+                                    center[cSize[0]++]= dum.y;
+                                    //cout<<cSize[0]<<endl;
+	                        	}
+
+	                        	max = t;ok = dum;
+
+	                    }
+
+	                }
+	            }
+
+	        }
+
+	    }
+
+
+return ;
+}
+
 
 extern "C" {
 
+void rs_centroid(double *x,double *y,int* count,double*cent)
+{
+
+    MyPoint centroid = compute2DPolygonCentroid(x,y, count[0]);
+    cent[0]=centroid.x;
+    cent[1]=centroid.y;
+}
 void rs_depth(double *x,double *y,double *p, double *dp,int *nn)
 {
 	int count=0;
@@ -385,13 +435,87 @@ void rs_med(double *x, double *y, double *md, int *nn)
 	md[1]=dd.y;
 }
 
-} // extern "C"
-
-/*
-int _tmain(int argc, _TCHAR* argv[])
+void rs_depthrings(double *inx,double *iny,double *outx, double *outy,int *size)
 {
-	parse();
-	return 0;
+    int count=0;
+	numberOfPoints=size[0];
+	MyPoint*Q;
+	Q=(MyPoint*)malloc(sizeof(MyPoint)*(numberOfPoints+1));
+
+	for(int i=0;i<numberOfPoints;i++)
+	{
+		P[i].x=inx[count];
+		P[i].y=iny[count];
+		Q[i].x=inx[count];
+		Q[i].y=iny[count];
+		count++;
+	}
+
+    sort(Q,Q+numberOfPoints,depthcompare);
+    for(int i=0;i<numberOfPoints;i++)
+	{
+		outx[i]=Q[i].x;
+		outy[i]=Q[i].y;
+	}
+
+	free(Q);
+
+    return;
 }
-*/
+
+void rs_getbag(double *ptX, double *ptY, double *bag, int *num, int *bagsz, double *center, int *cSize)
+{
+
+	int count=0;
+	std::vector<double> depthList;
+	numberOfPoints=num[0];
+
+	for(int i=0;i<numberOfPoints;i++)
+	{
+		P[i].x=ptX[count];
+		P[i].y=ptY[count];
+		count++;
+	}
+
+	for(int i=0;i<numberOfPoints;i++)
+	{
+		depthList.push_back(RSDepth(P[i]));
+		//printf("%d. %f\n",i,RSDepth(P[i]));
+	}
+
+	std::vector<double>::iterator first = depthList.begin();
+	std::vector<double>::iterator last = depthList.end();
+	std::vector<double>::iterator middle = first + (last - first) / 2;
+	//middle = middle + (last - first) / 4;
+	std::nth_element(first, middle, last); // can specify comparator as optional 4th arg
+	double median = *middle;
+	int bagSize = FillBag(bag,median,center,cSize);
+	//printf("\ndepth of median is :%f\n",median);
+	bagsz[0]=bagSize;
+	return;
+
+}
+
+
+void rs_getcenter(double *ptX, double *ptY, int *num, double *center, int *cSize)
+{
+	int count=0;
+	std::vector<double> depthList;
+	numberOfPoints=num[0];
+
+	for(int i=0;i<numberOfPoints;i++)
+	{
+		P[i].x=ptX[count];
+		P[i].y=ptY[count];
+		count++;
+	}
+
+	GetCenter(center,cSize);
+	//printf("\ndepth of median is :%f\n",median);
+	return;
+
+}
+
+
+} // extern "C"
 

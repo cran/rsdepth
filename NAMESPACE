@@ -1,5 +1,29 @@
 # Default NAMESPACE created by R
 # Remove the previous line if you edit this file
-
 # Export all names
-exportPattern(".")
+#exportPattern(".")
+useDynLib(rsdepth, 
+rs_centroid,
+rs_depth,
+rs_med,
+rs_depthrings,
+rs_getbag,
+rs_getcenter,
+polygonintersection
+)
+# Import all packages listed as Imports or Depends
+#import(
+#
+#)
+export(
+rsdepth, 
+centroid,
+convexhull,
+drawcompletegraph,
+getbag,
+inflate,
+rsdepth,
+rsmed,
+rsplot,
+rsrings,
+rstinterval)
