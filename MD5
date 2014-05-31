@@ -1,4 +1,4 @@
-6ef3cf7158fe22bcd29ac1e5ff9e3735 *DESCRIPTION
+3273684468ba4f0970d5933bf82c5d91 *DESCRIPTION
 a809c9c43b4d2ff202ebc81e35cfba0b *NAMESPACE
 2bb140b796c98ffa5c7beceec1ca330c *R/centroid.R
 73484fca8872e3ffba10c387a2f8ed38 *R/convexhull.R
@@ -22,5 +22,5 @@ cc35bf85f5d643cffc84d3c8409db5e0 *man/rsplot.Rd
 c9c1eb3633b7b4cabf101059c563ea74 *man/rstinterval.Rd
 b1bb6a2476d9a8e6818f2244c6175b02 *src/pointline.cpp
 4060e8665ebb0b177096e9fc123f5c1d *src/pointline.h
-74475338df3d660cdcdaa0abd405e88d *src/polygon.cpp
+55dbcbb5b215b4ed820254d4837eab9f *src/polygon.cpp
 2c55d311cd3043b24cf8120af4b630aa *src/rsdepth.cpp

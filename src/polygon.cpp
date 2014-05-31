@@ -59,6 +59,10 @@ int IsInsidePolygon(MyPoint *list, MyPoint pt, int sz)
 
     while( (last-start) > 2)
     {
+		// There is some problem.
+		if(mid < 0 || mid >= sz )
+		return 1;
+		
         l.a = list[0];
         l.b = list[mid];
 
@@ -92,8 +96,9 @@ int IsInsidePolygon(MyPoint *list, MyPoint pt, int sz)
 
 int PolygonIntersection(MyPoint *p1, MyPoint *p2, double *p3x, double *p3y, int n, int m)
 {
-	int count =0;
+	int count = 0;
 
+    
 	for(int i=0;i<n;i++)
 	{
 		MyLine l1;
@@ -104,6 +109,10 @@ int PolygonIntersection(MyPoint *p1, MyPoint *p2, double *p3x, double *p3y, int 
 			p3x[count]=p1[i].x;
 			p3y[count]=p1[i].y;
 			count++;
+			
+			// we don't have enough memory
+			if(count >= 2*(n+m) )
+			 return count;
 		}
 //		cout<<count<<" "<<i<<"  "<<n<<"   "<<m<<endl;
 
@@ -123,6 +132,10 @@ int PolygonIntersection(MyPoint *p1, MyPoint *p2, double *p3x, double *p3y, int 
 				p3x[count]=p2[j].x;
 				p3y[count]=p2[j].y;
 				count++;
+			// we don't have enough memory
+			if(count >= 2*(n+m) )
+			 return count;
+				
 			}
 
 
@@ -148,6 +161,10 @@ int PolygonIntersection(MyPoint *p1, MyPoint *p2, double *p3x, double *p3y, int 
 					p3x[count]=temp.x;
 					p3y[count]=temp.y;
 					count++;
+			// we don't have enough memory
+			if(count >= 2*(n+m) )
+			 return count;
+					
 				}
 			}
 
@@ -166,8 +183,16 @@ void polygonintersection(double *p1x, double *p1y,
 		int *n, int *m, int *p)
 {
 	MyPoint *p1,*p2;
-	p1=(MyPoint *) malloc(sizeof(MyPoint)*n[0]);
-	p2=(MyPoint *) malloc(sizeof(MyPoint)*m[0]);
+	MyPoint first_list[5001], second_list[5001];
+	p1 = first_list;
+	p2 = second_list;
+	
+	//p1=(MyPoint *) malloc(sizeof(MyPoint)*(n[0]+2) );
+	//p2=(MyPoint *) malloc(sizeof(MyPoint)*(m[0])+2) ;
+	
+	// Improper use
+	if(n[0]< 3 || n[0] > 5000 || m[0]< 3 || m[0] > 5000)
+	return;
 
 	for(int i=0;i<n[0];i++)
 	{
@@ -175,6 +200,10 @@ void polygonintersection(double *p1x, double *p1y,
 		p1[i].y=p1y[i];
 		//cout<<p1[i]<<endl;
 	}
+	
+	p1[n[0]].x=p1[0].x;
+	p1[n[0]].y=p1[0].y;
+	
 	//cout<<endl<<endl;
 
 	for(int i=0;i<m[0];i++)
@@ -183,7 +212,13 @@ void polygonintersection(double *p1x, double *p1y,
 		p2[i].y=p2y[i];
 		//cout<<p2[i]<<endl;
 	}
+	p2[m[0]].x=p2[0].x;
+	p2[m[0]].y=p2[0].y;
+	
 	p[0] = PolygonIntersection(p1, p2, p3x, p3y,  n[0], m[0]);
+	
+	//free(p1);
+	//free(p2);
 }
 
 } // extern "C"
