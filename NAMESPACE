@@ -15,6 +15,9 @@ polygonintersection
 #import(
 #
 #)
+importFrom("grDevices", "chull")
+importFrom("graphics", "points", "polygon", "segments")
+importFrom("stats", "rnorm", "runif")
 export(
 rsdepth, 
 centroid,
